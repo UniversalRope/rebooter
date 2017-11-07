@@ -1,0 +1,32 @@
+#/bin/bash/
+
+function network {
+
+tmp=$(mktemp)
+
+ping -c ya.ru
+if [ $? -ne 0 ]
+then
+inetstat="ЕСТЬ"
+else
+inetstat="ОТСУТСТВУЕТ"
+fi; clear
+
+
+lanmac=$(ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+wifimac=$(ifconfig wlan0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
+
+lanip=$(ip addr show eth0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')
+wifiip=$(ip addr show wlan0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')
+
+echo "Сетевое имя: $HOSTNAME" >> $tmp
+echo "Подключение к сети Интернет: $inetstat" >> $tmp
+echo " " >> $tmp
+echo "Интерфейс            MAC                        IP" >> $tmp
+echo "LAN             $lanmac         $lanip" >> $tmp
+echo "WiFi            $wifimac        $wifiip" >> $tmp
+
+whiptail --title "Информация о сети" --textbox $tmp 14 60 6
+rm $tmp
+bash $(pwd)/mainmenu.bash
+}

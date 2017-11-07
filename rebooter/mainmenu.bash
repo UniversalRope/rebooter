@@ -1,5 +1,5 @@
 #!/bin/bash
-OPTION=$(whiptail --title "Меню обслуживания рабочей станции" --menu "Сделайте ваш выбор" 14 60 6 --notags --nocancel \
+OPTION=$(whiptail --title "Меню обслуживания рабочей станции" --menu "Версия: $(cat $(pwd)/data/version)" 14 60 6 --notags --nocancel \
 "1" "Состояние сети" \
 "2" "Выполнить сценарий" \
 "3" "Резервное восстановление системы" \
@@ -9,15 +9,15 @@ OPTION=$(whiptail --title "Меню обслуживания рабочей ст
 
 case $OPTION in
 1)
-bash $(pwd)/network.bash
+source $(pwd)/network.fn; network
 exit 0
 ;;
 2)
-bash $(pwd)/scenario.bash
+source $(pwd)/scenario.fn; scenario
 exit 0
 ;;
 3)
-bash $(pwd)/restorer.bash
+bash $(pwd)/restorer.fn
 exit 0
 ;;
 4)

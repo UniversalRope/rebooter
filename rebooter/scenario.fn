@@ -1,0 +1,10 @@
+#!/bin/bash
+
+function scenario {
+declare -a array
+readarray ARRAY=$(ls $(pwd)/scenarious)
+array=$slist
+echo ${array[1]}
+#$slist=(ls $(pwd)/scenarious)
+#echo "${slist[1]}"
+}
