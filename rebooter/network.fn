@@ -1,32 +1,63 @@
-#/bin/bash/
+#!/bin/bash/
 
 function network {
 
-tmp=$(mktemp)
+tmp=$(mktemp) #Создание переменной временного файла
 
-ping -c ya.ru
-if [ $? -ne 0 ]
+# Проверка подключения к сети интернет:
+
+if [ -n $(wget -qO- eth0.me) ]
 then
-inetstat="ЕСТЬ"
+inetsatus="ЕСТЬ"
+extip=$(wget -qO- eth0.me)
 else
-inetstat="ОТСУТСТВУЕТ"
-fi; clear
+inetsatus="ОТСУТСТВУЕТ"
+extip="нет подключения"
+fi
 
-
-lanmac=$(ifconfig eth0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
-wifimac=$(ifconfig wlan0 | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')
-
-lanip=$(ip addr show eth0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')
-wifiip=$(ip addr show wlan0 | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')
+# Заполняем временный файл:
 
 echo "Сетевое имя: $HOSTNAME" >> $tmp
-echo "Подключение к сети Интернет: $inetstat" >> $tmp
+echo "Подключение к сети Интернет: $inetsatus" >> $tmp
+echo "Внешний ip-адрес: $extip" >> $tmp
 echo " " >> $tmp
-echo "Интерфейс            MAC                        IP" >> $tmp
-echo "LAN             $lanmac         $lanip" >> $tmp
-echo "WiFi            $wifimac        $wifiip" >> $tmp
+echo "Интерфейс          MAC                IP           Gateway" >> $tmp
 
-whiptail --title "Информация о сети" --textbox $tmp 14 60 6
+
+# Считываение сетевых параметров
+
+i=0       #Счетчик внутри цикла
+
+for iface in $(ifconfig -a | awk '( $1 ~ /eth[0-9]/ ) || ( $1 ~ /wlan[0-9]/ ) { print $1 }')
+do
+ifacename[i]=$iface                                                                                  #Массив имен интерфейсов
+ifacemac[i]=$(ifconfig ${ifacename[i]} | grep -o -E '([[:xdigit:]]{1,2}:){5}[[:xdigit:]]{1,2}')      #Массив MAC-адресов интерфейсов
+ifaceip[i]=$(ip addr show ${ifacename[i]} | awk '$1 == "inet" {gsub(/\/.*$/, "", $2); print $2}')    #Массив ip-адресов интерфейсов
+ifacegateway[i]=$(ip r | grep ${ifacename[i]} | awk '($1 == "default"){print $3}')                   #Массив шлюзов
+
+if [ $(echo "$iface" | cut -b 1-3) = "eth" ]
+then
+ifacename[i]="LAN  $i"
+elif [ $(echo "$iface" | cut -b 1-4) = "wlan" ]
+then
+ifacename[i]="WiFi $i"
+else
+ifacename[i]="unnamed"
+fi
+
+echo "${ifacename[i]}      ${ifacemac[i]}    ${ifaceip[i]}   ${ifacegateway[i]}" >> $tmp
+
+i=$(( $i + 1 ))
+done
+
+
+
+whiptail --title "Информация о сети" --textbox $tmp 14 70 6
 rm $tmp
-bash $(pwd)/mainmenu.bash
+
+echo ${ifacename[@]}
+echo ${ifacemac[@]}
+echo ${ifaceip[@]}
+echo ${ifacegateway[@]}
+
 }
