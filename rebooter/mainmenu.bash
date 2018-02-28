@@ -9,6 +9,7 @@ OPTION=$(whiptail --title "Меню обслуживания рабочей ст
 
 case $OPTION in
 1)
+#source $(pwd)/waiter.fn; waiter
 source $(pwd)/network.fn; network
 exit 0
 ;;

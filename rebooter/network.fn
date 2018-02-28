@@ -4,6 +4,8 @@ function network {
 
 tmp=$(mktemp) #Создание переменной временного файла
 
+whiptail --infobox "wait" 10 60
+
 # Проверка подключения к сети интернет:
 
 if [ -n $(wget -qO- eth0.me) ]
@@ -50,14 +52,9 @@ echo "${ifacename[i]}      ${ifacemac[i]}    ${ifaceip[i]}   ${ifacegateway[i]}"
 i=$(( $i + 1 ))
 done
 
-
-
 whiptail --title "Информация о сети" --textbox $tmp 14 70 6
 rm $tmp
 
-echo ${ifacename[@]}
-echo ${ifacemac[@]}
-echo ${ifaceip[@]}
-echo ${ifacegateway[@]}
-
+#$(pwd)/mainmenu.bash
+exit 0
 }
